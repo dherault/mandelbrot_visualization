@@ -6,7 +6,6 @@ and may not be redistributed without written permission.*/
 #include <stdio.h>
 #include <string>
 #include <cmath>
-#include <complex>
 
 //Screen dimension constants
 int w;
@@ -59,7 +58,7 @@ bool init()
 		}
 
 		//Create window
-		gWindow = SDL_CreateWindow( "SDL Tutorial", 0, 0, 0, 0, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_BORDERLESS);
+		gWindow = SDL_CreateWindow( "SDL Tutorial", 0, 0, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_ALLOW_HIGHDPI);
 		if( gWindow == NULL )
 		{
 			printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );
@@ -110,8 +109,6 @@ void close()
 
 int main( int argc, char* args[] )
 {
-	using namespace std::complex_literals;
-
 	//Start up SDL and create window
 	if( !init() )
 	{
@@ -121,8 +118,8 @@ int main( int argc, char* args[] )
 	{
 		//Main loop flag
 		bool quit = false;
-		std::complex<float> c;
-		std::complex<float> z;
+		float ca, cb;
+		float za, zb;
 		int n;
 		int brightness;
 		const int MAX_ITERATIONS = 100;
@@ -136,14 +133,17 @@ int main( int argc, char* args[] )
 
 		for (int y = 0; y < h; y++) {
 			for (int x = 0; x < w; x++) {
-				c = (x - originX) * pixelDensity + (y - originY) * pixelDensity * 1i;
-				z = c;
+				ca = (x - originX) * pixelDensity;
+				cb = (y - originY) * pixelDensity;
+				za = ca;
+				zb = cb;
 				n = 0;
 
 				for (int k = 0; k < MAX_ITERATIONS; k++) {
-					z = z * z + c;
+					za = za * za - zb * zb + ca;
+					zb = 2 * za * zb + cb;
 
-					if (abs(z) > 2) {
+					if (za + zb > 2) {
 						break;
 					}
 
@@ -157,7 +157,7 @@ int main( int argc, char* args[] )
 					brightness = map(n, 0, MAX_ITERATIONS, 0, 255);
 				}
 
-				SDL_SetRenderDrawColor(gRenderer, brightness, brightness, 1.2 * brightness, 255);
+				SDL_SetRenderDrawColor(gRenderer, brightness, brightness, brightness, 255);
 				SDL_RenderDrawPoint(gRenderer, x, y);
 			}
 		}
