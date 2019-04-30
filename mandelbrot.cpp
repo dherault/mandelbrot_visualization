@@ -35,6 +35,10 @@ SDL_Window* gWindow = NULL;
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
 
+int map(int n, int a1, int a2, int b1, int b2) {
+	return (n - a1) * (b2 - b1) / (a2 - a1) + b1;
+}
+
 bool init()
 {
 	//Initialization flag
@@ -78,7 +82,7 @@ bool init()
 
 				SDL_GetRendererOutputSize(gRenderer, &w, &h);
 
-				originX = floor(w / 2);
+				originX = floor(2 * w / 3);
 				originY = floor(h / 2);
 				pixelDensity = 4.0 / w;
 
@@ -119,6 +123,9 @@ int main( int argc, char* args[] )
 		bool quit = false;
 		std::complex<float> c;
 		std::complex<float> z;
+		int n;
+		int brightness;
+		const int MAX_ITERATIONS = 100;
 
 		//Event handler
 		SDL_Event e;
@@ -127,20 +134,31 @@ int main( int argc, char* args[] )
 		SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
 		SDL_RenderClear( gRenderer );
 
-		SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
-
 		for (int y = 0; y < h; y++) {
 			for (int x = 0; x < w; x++) {
 				c = (x - originX) * pixelDensity + (y - originY) * pixelDensity * 1i;
 				z = c;
+				n = 0;
 
-				for (int k = 0; k < 10; k++) {
+				for (int k = 0; k < MAX_ITERATIONS; k++) {
 					z = z * z + c;
+
+					if (abs(z) > 2) {
+						break;
+					}
+
+					n++;
 				}
 
-				if (abs(z) <= 2) {
-					SDL_RenderDrawPoint( gRenderer, x, y );
+				if (n == MAX_ITERATIONS) {
+					brightness = 0;
 				}
+				else {
+					brightness = map(n, 0, MAX_ITERATIONS, 0, 255);
+				}
+
+				SDL_SetRenderDrawColor(gRenderer, brightness, brightness, 1.2 * brightness, 255);
+				SDL_RenderDrawPoint(gRenderer, x, y);
 			}
 		}
 
