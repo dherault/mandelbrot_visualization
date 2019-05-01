@@ -6,6 +6,9 @@ and may not be redistributed without written permission.*/
 #include <stdio.h>
 #include <string>
 #include <cmath>
+#include <chrono>
+
+using namespace std::chrono;
 
 //Screen dimension constants
 int w;
@@ -107,6 +110,56 @@ void close()
 	SDL_Quit();
 }
 
+void draw() {
+	float ca;
+	float cb;
+	float za;
+	float zb;
+	float zaa;
+	int n;
+	int brightness;
+	const int MAX_ITERATIONS = 100;
+
+	//Clear screen
+	SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	SDL_RenderClear(gRenderer);
+
+	for (int y = 0; y < h; y++) {
+		for (int x = 0; x < w; x++) {
+			ca = (x - originX) * pixelDensity;
+			cb = (y - originY) * pixelDensity;
+			za = ca;
+			zb = cb;
+			n = 0;
+
+			for (int k = 0; k < MAX_ITERATIONS; k++) {
+				zaa = za;
+				za = za * za - zb * zb + ca;
+				zb = 2 * zaa * zb + cb;
+
+				if (za * za + zb * zb > 4) {
+					break;
+				}
+
+				n++;
+			}
+
+			if (n == MAX_ITERATIONS) {
+				brightness = 0;
+			}
+			else {
+				brightness = map(n, 0, MAX_ITERATIONS, 0, 255);
+			}
+
+			SDL_SetRenderDrawColor(gRenderer, brightness, brightness, brightness, 255);
+			SDL_RenderDrawPoint(gRenderer, x, y);
+		}
+	}
+
+	//Update screen
+	SDL_RenderPresent(gRenderer);
+}
+
 int main( int argc, char* args[] )
 {
 	//Start up SDL and create window
@@ -116,54 +169,19 @@ int main( int argc, char* args[] )
 	}
 	else
 	{
+		high_resolution_clock::time_point t1 = high_resolution_clock::now();
+		draw();
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+    auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+
+    printf("duration: %d\n", duration / 1000);
+
 		//Main loop flag
 		bool quit = false;
-		float ca, cb;
-		float za, zb;
-		int n;
-		int brightness;
-		const int MAX_ITERATIONS = 100;
 
 		//Event handler
 		SDL_Event e;
-
-		//Clear screen
-		SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-		SDL_RenderClear( gRenderer );
-
-		for (int y = 0; y < h; y++) {
-			for (int x = 0; x < w; x++) {
-				ca = (x - originX) * pixelDensity;
-				cb = (y - originY) * pixelDensity;
-				za = ca;
-				zb = cb;
-				n = 0;
-
-				for (int k = 0; k < MAX_ITERATIONS; k++) {
-					za = za * za - zb * zb + ca;
-					zb = 2 * za * zb + cb;
-
-					if (za + zb > 2) {
-						break;
-					}
-
-					n++;
-				}
-
-				if (n == MAX_ITERATIONS) {
-					brightness = 0;
-				}
-				else {
-					brightness = map(n, 0, MAX_ITERATIONS, 0, 255);
-				}
-
-				SDL_SetRenderDrawColor(gRenderer, brightness, brightness, brightness, 255);
-				SDL_RenderDrawPoint(gRenderer, x, y);
-			}
-		}
-
-		//Update screen
-		SDL_RenderPresent( gRenderer );
 
 		//While application is running
 		while( !quit )
