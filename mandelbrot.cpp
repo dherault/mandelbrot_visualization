@@ -189,13 +189,16 @@ int main( int argc, char* args[] )
 				if (e.type == SDL_QUIT || e.key.keysym.sym == SDLK_ESCAPE) {
 					quit = true;
 				}
-
 				else if (e.type == SDL_MOUSEWHEEL) {
-					printf("scroll, %d, %d\n", e.wheel.x, e.wheel.y);
 					originX -= floor(e.wheel.x * pixelDensity * 10000);
+					originY += floor(e.wheel.y * pixelDensity * 10000);
 
 					draw();
 				}
+				else if (e.type == SDL_MULTIGESTURE) {
+					printf("%i, %f\n", e.mgesture.numFingers, e.mgesture.dDist);
+				}
+
 			}
 		}
 	}
