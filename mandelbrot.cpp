@@ -6,6 +6,9 @@ and may not be redistributed without written permission.*/
 #include <stdio.h>
 #include <string>
 #include <cmath>
+#include <chrono>
+
+using namespace std::chrono;
 
 //Screen dimension constants
 int w;
@@ -166,13 +169,19 @@ int main( int argc, char* args[] )
 	}
 	else
 	{
+		high_resolution_clock::time_point t1 = high_resolution_clock::now();
+		draw();
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+    auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+
+    printf("duration: %d\n", duration / 1000);
+
 		//Main loop flag
 		bool quit = false;
 
 		//Event handler
 		SDL_Event e;
-
-		draw();
 
 		//While application is running
 		while (!quit)
